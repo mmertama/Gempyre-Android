@@ -6,8 +6,25 @@ import argparse
 root = ''
 
 def add_line(file_name, line):
-    with open(os.path.join(parser.project_name, filename), 'a') as f
+    with open(os.path.join(root, file_name), 'a') as f:
         f.write(line)
+        
+def write_line(file_name, line):
+    full_name = os.path.join(root, file_name)
+    path = os.path.dirname(full_name)
+    os.makedirs(path, exist_ok=True)
+    with open(full_name, 'w') as f:
+        f.write(line)
+        
+        
+def env_path(env):
+    if env not in os.environ:
+        print(env, "is not set")
+        exit(-3)
+    if not os.path.exists(os.environ[env]):
+        print("%s: '%s' not found", env, os.environ[env])
+        exit(-3)
+
 
 def main():
     parser = argparse.ArgumentParser(description='Telex-Android init.')
@@ -16,21 +33,25 @@ def main():
 
     args = parser.parse_args()
     
-    file_uri = parser.project_id.split('.')
+    file_uri = args.project_id.split('.')
     
-    if len(file_uri) != 3:
+    if len(file_uri) < 2:
         print("Expected project id as 'com.something.myapp'")
         exit(-1)
-            
+        
+    env_path('ANDROID_HOME')
+    env_path('ANDROID_SDK_ROOT')
+             
     try:
-        os.mkdir(parser.project_name)
+        os.mkdir(args.project_name)
     except OSError:
-        print("Invalid project name:", parser.project_name)
+        print("Invalid project name:", args.project_name)
         exit(-2)
         
-    root = parser.project_name
+    global root
+    root = args.project_name + '/'
         
-    subprocess.run(['gradle', 'init', '--type', 'basic', '--dsl', 'groovy', '--project-name', args.project_name])
+    subprocess.run(['gradle', 'init', '--type', 'basic', '--dsl', 'groovy', '--project-name', args.project_name], cwd=root)
     
     add_line('settings.gradle', "include ':app'")
 
@@ -60,7 +81,7 @@ task clean(type: Delete) {
     
     add_line('build.gradle', build_gradle)
     
-    os.mkdir('app')
+    os.mkdir(root + 'app')
     
     app_build_gradle = '''
 apply plugin: 'com.android.application'
@@ -68,7 +89,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 25
     defaultConfig {
-        applicationId ''' + args.project_id + '''
+        applicationId "''' + args.project_id + '''"
         minSdkVersion 16
         targetSdkVersion 25
         versionCode 1
@@ -80,17 +101,22 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    
+    externalNativeBuild {
+    cmake {
+      path "''' + root + '/cpp/CMakeLists.txt"
+    }
+  }
 }
 
 dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     implementation 'com.android.support:appcompat-v7:25.3.1'
-}'''
+}
+'''
+    add_line('app/build.gradle', app_build_gradle)
     
-    
-add_line('app/build.gradle', app_build_gradle)    
-    
-app_styles = '''
+    app_styles = '''
 <resources>
 
     <!-- Base application theme. -->
@@ -100,16 +126,14 @@ app_styles = '''
 
 </resources>    
 '''
-
-add_line('app/src/main/res/values/styles.xml', app_styles)
+    write_line('app/src/main/res/values/styles.xml', app_styles)
     
-android_manifest = '''
-<?xml version="1.0" encoding="utf-8"?>
+    android_manifest = '''<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="''' + args.project_id + '''">
 
     <application
-        android:label=" ''' + args.project_name + '''"
+        android:label="''' + args.project_name + '''"
         android:theme="@style/AppTheme">
 
         <activity android:name=".MainActivity">
@@ -122,10 +146,10 @@ android_manifest = '''
 
 </manifest>
 '''
-
-add_line('app/src/main/AndroidManifest.xml', android_manifest)
-
-main_activity = '''
+    
+    write_line('app/src/main/AndroidManifest.xml', android_manifest)
+    
+    main_activity = '''
 package ''' + args.project_id + ''';
 
 import android.app.Activity;
@@ -140,11 +164,10 @@ public class MainActivity extends Activity {
     }
 }
 '''
-
-add_line('app/src/main/java/' + file_uri.join('/') + '/MainActivity.java', main_activity)
-
-activity_main = '''
-<?xml version="1.0" encoding="utf-8"?>
+    
+    write_line('app/src/main/java/' + '/'.join(file_uri) + '/MainActivity.java', main_activity)
+    
+    activity_main = '''<?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -163,8 +186,8 @@ activity_main = '''
 
 </android.support.constraint.ConstraintLayout>
 '''
-
-add_line('app/src/main/res/layout/activity_main.xml', activity_main)
+    
+    write_line('app/src/main/res/layout/activity_main.xml', activity_main)
 
 if __name__ == '__main__':
     main()
