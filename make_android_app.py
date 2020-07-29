@@ -1,4 +1,4 @@
 import subprocess
 
-subprocess.run(['gradle', 'init', '--type basic', '--dsl groovy'])
+subprocess.run(['gradle', 'init', '--type', 'basic', '--dsl', 'groovy'])
 
