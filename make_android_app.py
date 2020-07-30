@@ -28,8 +28,8 @@ def env_path(env):
 
 def main():
     parser = argparse.ArgumentParser(description='Telex-Android init.')
-    parser.add_argument('--project_name', help='Project name', default="TELEX_APP")
-    parser.add_argument('--project_id', help="Project id, as 'com.something.myapp'", default="com.telex.myapp")
+    parser.add_argument('--project_name', help='Project name', nargs=1, default="TELEX_APP")
+    parser.add_argument('--project_id', nargs=1, help="Project id, as 'com.something.myapp'", default="com.telex.myapp")
 
     args = parser.parse_args()
     
@@ -41,6 +41,7 @@ def main():
         
     env_path('ANDROID_HOME')
     env_path('ANDROID_SDK_ROOT')
+    env_path('TELEX_DIR')
              
     try:
         os.mkdir(args.project_name)
@@ -104,9 +105,15 @@ android {
     
     externalNativeBuild {
     cmake {
-      path "''' + root + '/cpp/CMakeLists.txt"
+      path "''' + root + '''/Telex/CMakeLists.txt"
     }
   }
+  defaultConfig {
+    externalNativeBuild {
+        cmake {
+            cppFlags "-std=c++17"
+        }
+    }
 }
 
 dependencies {
@@ -188,6 +195,38 @@ public class MainActivity extends Activity {
 '''
     
     write_line('app/src/main/res/layout/activity_main.xml', activity_main)
+    
+    
+    telex_root = os.environ['TELEX_DIR']
+    cmakelists =  '''cmake_minimum_required (VERSION 3.14)
+
+set(NAME ''' + args.project_name.replace(' ', '_') + ''')
+project (${NAME}test)
+
+include(''' + telex_root + '''/scripts/addResource.cmake_script)
+
+set(CMAKE_CXX_STANDARD 17)
+
+include_directories(
+     ''' + telex_root + '''/telexlib/include
+    include
+)
+
+find_package (telex REQUIRED PATHS ''' + telex_root + ''')
+
+add_compile_options(fexceptions)
+add_compile_options(c++_static)
+
+add_library(${PROJECT_NAME} SHARED
+    src/main.cpp
+    gui/${NAME}.html
+    )
+
+# Add Telex resources here with:  addResource(PROJECT ${PROJECT_NAME} TARGET include/${NAME}_resource.h SOURCES gui/${NAME}.html stuff/owl.png)
+
+target_link_libraries (${PROJECT_NAME} telex)
+'''
+    write_line('Telex/CMakeLists.txt', cmakelists)
 
 if __name__ == '__main__':
     main()
