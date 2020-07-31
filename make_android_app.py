@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import argparse
+import re
 
 root = ''
 
@@ -27,9 +28,10 @@ def env_path(env):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Telex-Android init.')
-    parser.add_argument('--project_name', help='Project name', nargs=1, default="TELEX_APP")
-    parser.add_argument('--project_id', nargs=1, help="Project id, as 'com.something.myapp'", default="com.telex.myapp")
+    parser = argparse.ArgumentParser(description='Gempyre-Android init.')
+    parser.add_argument('--project_name', help='Project name', nargs=1, default="GEMPYRE_APP")
+    parser.add_argument('--project_id', nargs=1, help="Project id, as 'com.something.myapp'", default="com.gempyre.myapp")
+    parser.add_argument('--cmake_path', nargs=1, help="Since Android SDK default Cmake is too old, path to (at least) 3.16 is needed, dont include bin :-o", default="/usr/local")
 
     args = parser.parse_args()
     
@@ -41,7 +43,17 @@ def main():
         
     env_path('ANDROID_HOME')
     env_path('ANDROID_SDK_ROOT')
-    env_path('TELEX_DIR')
+    
+    capture = subprocess.run([args.cmake_path + '/bin/cmake', '--version'], capture_output=True)
+    m = re.match(r'cmake\sversion\s(\d+)\.(\d+)(?:\.(\d+))?', capture.stdout.decode('ascii'))
+    if not m:
+        print("Cannot find cmake", capture.stderr)
+        parser.print_help()
+        exit(-1);
+    if int(m[1]) < 3 or int(m[1]) == 3 and int(m[2]) < 11:
+        print("Invalid cmake version:", capture.stdout)
+        exit(-4)
+        
              
     try:
         os.mkdir(args.project_name)
@@ -96,6 +108,7 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -104,15 +117,19 @@ android {
     }
     
     externalNativeBuild {
-    cmake {
-      path "''' + root + '''/Telex/CMakeLists.txt"
-    }
-  }
-  defaultConfig {
-    externalNativeBuild {
         cmake {
-            cppFlags "-std=c++17"
+          path "../Gempyre/CMakeLists.txt"
         }
+    }
+
+    defaultConfig {
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++17"
+                version "3.11"
+                arguments "-DHAS_TEST=OFF", "-DHAS_BLOG=OFF", "-DHAS_AFFILIATES=OFF", "-DHAS_MDMAKER=OFF"
+                }
+            }
     }
 }
 
@@ -121,6 +138,8 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:25.3.1'
 }
 '''
+    write_line('local.properties', 'cmake.dir="' + args.cmake_path + '"\n')
+    
     add_line('app/build.gradle', app_build_gradle)
     
     app_styles = '''
@@ -196,37 +215,74 @@ public class MainActivity extends Activity {
     
     write_line('app/src/main/res/layout/activity_main.xml', activity_main)
     
+    project_name = args.project_name.replace(' ', '_')
     
-    telex_root = os.environ['TELEX_DIR']
-    cmakelists =  '''cmake_minimum_required (VERSION 3.14)
+    cmakelists =  '''cmake_minimum_required (VERSION 3.11)
 
-set(NAME ''' + args.project_name.replace(' ', '_') + ''')
+set(NAME ''' + project_name + ''')
 project (${NAME}test)
 
-include(''' + telex_root + '''/scripts/addResource.cmake_script)
+include(FeatureSummary)
+include(GNUInstallDirs)
+include(FetchContent)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DANDROID_ABI=armeabi-v7a")
+
+FetchContent_Declare(
+    gempyre_library
+    GIT_REPOSITORY https://github.com/mmertama/Gempyre.git
+    )
+    
+    
+FetchContent_GetProperties(gempyre_library)
+if(NOT gempyre_library)
+  FetchContent_Populate(gempyre_library)
+  add_subdirectory(${gempyre_library_SOURCE_DIR} ${gempyre_library_BINARY_DIR})
+endif()
+
+include("${gempyre_library_SOURCE_DIR}/scripts/addResource.cmake_script")
 
 include_directories(
-     ''' + telex_root + '''/telexlib/include
+    "${gempyre_library_BINARY_DIR}/gempyrelib/include"
     include
 )
-
-find_package (telex REQUIRED PATHS ''' + telex_root + ''')
-
-add_compile_options(fexceptions)
-add_compile_options(c++_static)
-
+    
 add_library(${PROJECT_NAME} SHARED
     src/main.cpp
     gui/${NAME}.html
     )
 
-# Add Telex resources here with:  addResource(PROJECT ${PROJECT_NAME} TARGET include/${NAME}_resource.h SOURCES gui/${NAME}.html stuff/owl.png)
+# Add Gempyre resources here with:  addResource(PROJECT ${PROJECT_NAME} TARGET include/${NAME}_resource.h SOURCES gui/${NAME}.html stuff/owl.png)
 
-target_link_libraries (${PROJECT_NAME} telex)
+link_directories(${gempyre_library_BINARY_DIR})
+target_link_libraries (${PROJECT_NAME} gempyre)
 '''
-    write_line('Telex/CMakeLists.txt', cmakelists)
+    write_line('Gempyre/CMakeLists.txt', cmakelists)
+    
+    main_cpp = '''#include <gempyre.h>
+    '''
+    
+    write_line('Gempyre/src/main.cpp', main_cpp)
+    
+    gui_html = '''<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>drawCanvas</title>
+</head>
+<body>
+  <script src="/gempyre.js"></script>
+  <h1>Hello World!</h1>
+  <h2>Gempyre Android</h2>
+</body>
+</html>
+    '''
+
+    write_line('Gempyre/gui/' + project_name + ".html", gui_html)
 
 if __name__ == '__main__':
     main()

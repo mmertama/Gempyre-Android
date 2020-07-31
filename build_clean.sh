@@ -1,5 +1,5 @@
-git clean -dfx
+git clean -dffx
 python3 make_android_app.py
-pushd TELEX_APP/
+pushd GEMPYRE_APP/
 ./gradlew build
 popd
