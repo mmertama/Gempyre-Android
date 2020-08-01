@@ -43,6 +43,7 @@ def main():
         
     env_path('ANDROID_HOME')
     env_path('ANDROID_SDK_ROOT')
+   # env_path('ANDROID_TOOLCHAIN')
     
     capture = subprocess.run([args.cmake_path + '/bin/cmake', '--version'], capture_output=True)
     m = re.match(r'cmake\sversion\s(\d+)\.(\d+)(?:\.(\d+))?', capture.stdout.decode('ascii'))
@@ -103,7 +104,7 @@ android {
     compileSdkVersion 25
     defaultConfig {
         applicationId "''' + args.project_id + '''"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -124,10 +125,19 @@ android {
 
     defaultConfig {
         externalNativeBuild {
+          ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
+            }
             cmake {
                 cppFlags "-std=c++17"
                 version "3.11"
-                arguments "-DHAS_TEST=OFF", "-DHAS_BLOG=OFF", "-DHAS_AFFILIATES=OFF", "-DHAS_MDMAKER=OFF"
+                arguments "-DHAS_TEST=OFF",
+                          "-DHAS_BLOG=OFF",
+                          "-DHAS_AFFILIATES=OFF",
+                          "-DHAS_MDMAKER=OFF",
+                          "-DANDROID_STL=c++_static",
+                          "-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a",
+                          "-DCMAKE_ANDROID_ARCH=armv7-a"
                 }
             }
     }
