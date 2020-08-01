@@ -244,7 +244,7 @@ endif()
 include("${gempyre_library_SOURCE_DIR}/scripts/addResource.cmake_script")
 
 include_directories(
-    "${gempyre_library_BINARY_DIR}/gempyrelib/include"
+    "${gempyre_library_SOURCE_DIR}/gempyrelib/include"
     include
 )
     
