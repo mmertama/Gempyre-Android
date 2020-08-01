@@ -43,6 +43,8 @@ def main():
         
     env_path('ANDROID_HOME')
     env_path('ANDROID_SDK_ROOT')
+    env_path('AR')
+    env_path('RANLIB')
    # env_path('ANDROID_TOOLCHAIN')
     
     capture = subprocess.run([args.cmake_path + '/bin/cmake', '--version'], capture_output=True)
@@ -263,14 +265,22 @@ add_library(${PROJECT_NAME} SHARED
     gui/${NAME}.html
     )
 
-# Add Gempyre resources here with:  addResource(PROJECT ${PROJECT_NAME} TARGET include/${NAME}_resource.h SOURCES gui/${NAME}.html stuff/owl.png)
+addResource(PROJECT ${PROJECT_NAME} TARGET include/main_resource.h SOURCES gui/main.html)
 
 link_directories(${gempyre_library_BINARY_DIR})
 target_link_libraries (${PROJECT_NAME} gempyre)
 '''
     write_line('Gempyre/CMakeLists.txt', cmakelists)
     
-    main_cpp = '''#include <gempyre.h>
+    main_cpp = ''' //This file is an example, a script generated
+    #include <gempyre.h>
+    #include "main_resource.h"
+    
+    int main() {
+        Gempyre::Ui ui({{"/main.html", Mainhtml}}, "main.html");
+        Gempyre::Element canvas(ui, "h2").setHTML("Gempyre for Android!");
+        ui.run();
+    }
     '''
     
     write_line('Gempyre/src/main.cpp', main_cpp)
@@ -287,12 +297,12 @@ target_link_libraries (${PROJECT_NAME} gempyre)
 <body>
   <script src="/gempyre.js"></script>
   <h1>Hello World!</h1>
-  <h2>Gempyre Android</h2>
+  <h2 id="h2"></h2>
 </body>
 </html>
     '''
 
-    write_line('Gempyre/gui/' + project_name + ".html", gui_html)
+    write_line('Gempyre/gui/main.html", gui_html)
 
 if __name__ == '__main__':
     main()
