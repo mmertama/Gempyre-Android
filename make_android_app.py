@@ -93,11 +93,14 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
 '''
     
     add_line('build.gradle', build_gradle)
     
     os.mkdir(root + 'app')
+    
+    # Is filter needed? 'arm64-v8a', 
     
     app_build_gradle = '''
 apply plugin: 'com.android.application'
@@ -106,7 +109,7 @@ android {
     compileSdkVersion 25
     defaultConfig {
         applicationId "''' + args.project_id + '''"
-        minSdkVersion 21
+        minSdkVersion 25
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -128,7 +131,7 @@ android {
     defaultConfig {
         externalNativeBuild {
           ndk {
-            abiFilters 'arm64-v8a', 'armeabi-v7a'
+            abiFilters 'armeabi-v7a'
             }
             cmake {
                 cppFlags "-std=c++17"
@@ -146,9 +149,11 @@ android {
 }
 
 dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
-    implementation 'com.android.support:appcompat-v7:25.3.1'
+    implementation 'com.android.support:appcompat-v7:25.3.1'    
 }
+
 '''
     write_line('local.properties', 'cmake.dir="' + args.cmake_path + '"\n')
     
@@ -192,15 +197,41 @@ package ''' + args.project_id + ''';
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.webkit.WebView;
+import android.util.Base64;
 
 public class MainActivity extends Activity {
+	private WebView webView;
+
+    public native int callMain();
+
+    public int onLoad(String url) {
+            String encodedHtml = Base64.encodeToString(url.getBytes(),
+            Base64.NO_PADDING);
+            webView.loadData(encodedHtml, "text/html", "base64");
+            return 0;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+	System.loadLibrary("gempyre");
+
+	webView = new WebView(this);
+        setContentView(webView);
+
+	Thread thread = new Thread(new Runnable() {
+		public void run() {
+			callMain();
+			finish();
+			System.exit(0);
+                 }
+    	});
+	thread.start();
     }
 }
+
 '''
     
     write_line('app/src/main/java/' + '/'.join(file_uri) + '/MainActivity.java', main_activity)
@@ -213,14 +244,11 @@ public class MainActivity extends Activity {
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <WebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+    />
 
 </android.support.constraint.ConstraintLayout>
 '''
@@ -244,6 +272,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DANDROID_ABI=armeabi-v7a")
 FetchContent_Declare(
     gempyre_library
     GIT_REPOSITORY https://github.com/mmertama/Gempyre.git
+    GIT_TAG        origin/android
     )
     
     
@@ -252,6 +281,8 @@ if(NOT gempyre_library)
   FetchContent_Populate(gempyre_library)
   add_subdirectory(${gempyre_library_SOURCE_DIR} ${gempyre_library_BINARY_DIR})
 endif()
+
+set(GEMPYRE_DIR ${gempyre_library_SOURCE_DIR})
 
 include("${gempyre_library_SOURCE_DIR}/scripts/addResource.cmake_script")
 
@@ -262,7 +293,7 @@ include_directories(
     
 add_library(${PROJECT_NAME} SHARED
     src/main.cpp
-    gui/${NAME}.html
+    gui/main.html
     )
 
 addResource(PROJECT ${PROJECT_NAME} TARGET include/main_resource.h SOURCES gui/main.html)
@@ -278,7 +309,7 @@ target_link_libraries (${PROJECT_NAME} gempyre)
     
     int main() {
         Gempyre::Ui ui({{"/main.html", Mainhtml}}, "main.html");
-        Gempyre::Element canvas(ui, "h2").setHTML("Gempyre for Android!");
+        Gempyre::Element(ui, "h2").setHTML("Gempyre for Android!");
         ui.run();
     }
     '''
@@ -302,7 +333,7 @@ target_link_libraries (${PROJECT_NAME} gempyre)
 </html>
     '''
 
-    write_line('Gempyre/gui/main.html", gui_html)
+    write_line('Gempyre/gui/main.html', gui_html)
 
 if __name__ == '__main__':
     main()
