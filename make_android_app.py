@@ -28,10 +28,16 @@ def env_path(env):
 
 
 def main():
+
+    if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 7):
+        print ("Shall be using Python 3.7")
+        exit(-1)
+    
     parser = argparse.ArgumentParser(description='Gempyre-Android init.')
     parser.add_argument('--project_name', help='Project name', nargs=1, default="GEMPYRE_APP")
     parser.add_argument('--project_id', nargs=1, help="Project id, as 'com.something.myapp'", default="com.gempyre.myapp")
-    parser.add_argument('--cmake_path', nargs=1, help="Since Android SDK default Cmake is too old, path to (at least) 3.16 is needed, dont include bin :-o", default="/usr/local")
+    parser.add_argument('--cmake_path', nargs=1, help="Since Android SDK default Cmake is too old, path to (at least) 3.16 is needed, dont include bin :-o",
+    default= "/usr/local" if sys.platform == 'darwin' else '/usr')
 
     args = parser.parse_args()
     
@@ -41,11 +47,19 @@ def main():
         print("Expected project id as 'com.something.myapp'")
         exit(-1)
         
-    env_path('ANDROID_HOME')
-    env_path('ANDROID_SDK_ROOT')
-    env_path('AR')
-    env_path('RANLIB')
-   # env_path('ANDROID_TOOLCHAIN')
+    if 'ANDROID_HOME' not in os.environ and 'ANDROID_SDK_ROOT' not in os.environ:
+        print(env, "ANDROID_HOME nor ANDROID_SDK_ROOT is not set")
+        exit(-3)
+ 
+    if sys.platform == 'darwin':
+        env_path('AR')
+        env_path('RANLIB')
+        
+    #env_path('ANDROID_TOOLCHAIN')
+    
+    if not os.path.exists(args.cmake_path + '/bin/cmake'):
+        print("cmake not found at", args.cmake_path + '/bin')
+        exit(-3)
     
     capture = subprocess.run([args.cmake_path + '/bin/cmake', '--version'], capture_output=True)
     m = re.match(r'cmake\sversion\s(\d+)\.(\d+)(?:\.(\d+))?', capture.stdout.decode('ascii'))
@@ -67,7 +81,9 @@ def main():
     global root
     root = args.project_name + '/'
         
-    subprocess.run(['gradle', 'init', '--type', 'basic', '--dsl', 'groovy', '--project-name', args.project_name], cwd=root)
+    gradle_call = ['gradle', 'init', '--type', 'basic', '--dsl', 'groovy', '--project-name', args.project_name]    
+        
+    subprocess.run(gradle_call, cwd=root)
     
     add_line('settings.gradle', "include ':app'")
 
@@ -143,7 +159,7 @@ android {
                           "-DANDROID_STL=c++_static",
                           "-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a",
                           "-DCMAKE_ANDROID_ARCH=armv7-a",
-                          "-DRANLIB=''' + os.environ['RANLIB'] + '''"
+                          "-DRANLIB=''' + os.environ['RANLIB'] if sys.platform == 'darwin' else 'None' + '''"
                 }
             }
     }
