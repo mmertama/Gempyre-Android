@@ -142,7 +142,8 @@ android {
                           "-DHAS_MDMAKER=OFF",
                           "-DANDROID_STL=c++_static",
                           "-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a",
-                          "-DCMAKE_ANDROID_ARCH=armv7-a"
+                          "-DCMAKE_ANDROID_ARCH=armv7-a",
+                          "-DRANLIB=''' + os.environ['RANLIB'] + '''"
                 }
             }
     }
