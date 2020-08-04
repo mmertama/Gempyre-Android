@@ -202,7 +202,7 @@ android {
                           "-DHAS_BLOG=OFF",
                           "-DHAS_AFFILIATES=OFF",
                           "-DHAS_MDMAKER=OFF",
-                          "-DANDROID_STL=c++_static",
+                          "-DANDROID_STL=c++_shared",
                           "-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a",
                           "-DCMAKE_ANDROID_ARCH=armv7-a" ''' + osx_line + '''
                 }
@@ -254,6 +254,8 @@ dependencies {
     
     write_line('app/src/main/AndroidManifest.xml', android_manifest)
     
+    project_name = args.project_name.replace(' ', '_')
+    
     main_activity = '''
 package ''' + args.project_id + ''';
 
@@ -267,30 +269,32 @@ public class MainActivity extends Activity {
 
     public native int callMain();
 
-    public int onLoad(String url) {
+    public int onUiLoad(String url) {
             String encodedHtml = Base64.encodeToString(url.getBytes(),
             Base64.NO_PADDING);
             webView.loadData(encodedHtml, "text/html", "base64");
             return 0;
     }
+    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-	System.loadLibrary("gempyre");
+        
+        System.loadLibrary("''' + project_name + '''");
+        
+	    webView = new WebView(this);
+            setContentView(webView);
 
-	webView = new WebView(this);
-        setContentView(webView);
-
-	Thread thread = new Thread(new Runnable() {
-		public void run() {
-			callMain();
-			finish();
-			System.exit(0);
-                 }
-    	});
-	thread.start();
+	    Thread thread = new Thread(new Runnable() {
+		    public void run() {
+			    callMain();
+			    finish();
+			    System.exit(0);
+                     }
+        	});
+	    thread.start();
     }
 }
 
@@ -317,12 +321,11 @@ public class MainActivity extends Activity {
     
     write_line('app/src/main/res/layout/activity_main.xml', activity_main)
     
-    project_name = args.project_name.replace(' ', '_')
     
     cmakelists =  '''cmake_minimum_required (VERSION 3.11)
 
 set(NAME ''' + project_name + ''')
-project (${NAME}test)
+project (${NAME})
 
 include(FeatureSummary)
 include(GNUInstallDirs)
@@ -366,13 +369,20 @@ target_link_libraries (${PROJECT_NAME} gempyre)
     write_line('Gempyre/CMakeLists.txt', cmakelists)
     
     main_cpp = ''' //This file is an example, a script generated
+    #include <jni.h>
     #include <gempyre.h>
     #include "main_resource.h"
     
-    int main() {
+    extern "C" {
+  
+    JNIEXPORT jint JNICALL
+    Java_com_gempyre_myapp_MainActivity_callMain(JNIEnv* env, jobject obj) {
+        Gempyre::setJNIENV(env, obj);
         Gempyre::Ui ui({{"/main.html", Mainhtml}}, "main.html");
         Gempyre::Element(ui, "h2").setHTML("Gempyre for Android!");
         ui.run();
+        return 0;
+    }
     }
     '''
     
