@@ -30,7 +30,7 @@ def env_path(env):
 def main():
 
     if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 7):
-        print ("Shall be using Python 3.7")
+        print ("Shall be using at least Python 3.7")
         exit(-1)
     
     parser = argparse.ArgumentParser(description='Gempyre-Android init.')
@@ -49,8 +49,8 @@ def main():
         print("Expected project id as 'com.something.myapp'")
         exit(-1)
      
-    android_root = args.android_sdk
-        
+    android_root = args.android_sdk[0] if args.android_sdk else None
+    
     if not android_root:
         if 'ANDROID_HOME' in os.environ:
             android_root = os.environ['ANDROID_HOME']
@@ -64,7 +64,7 @@ def main():
         print("Invalid Android SDK ", android_root)
         exit(-2)
     
-    android_ndk_root = args.android_ndk
+    android_ndk_root = args.android_ndk[0] if args.android_ndk else None
         
     if not android_ndk_root:
         if 'ANDROID_NDK_ROOT' in os.environ:
@@ -213,7 +213,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
-    implementation 'com.android.support:appcompat-v7:25.3.1'    
+    implementation 'androidx.appcompat:appcompat:1.1.0'   
 }
 
 '''
