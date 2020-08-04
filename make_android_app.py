@@ -35,6 +35,8 @@ def main():
     
     parser = argparse.ArgumentParser(description='Gempyre-Android init.')
     parser.add_argument('--project_name', help='Project name', nargs=1, default="GEMPYRE_APP")
+    parser.add_argument('--android_sdk', help='Android Path', nargs=1)
+    parser.add_argument('--android_ndk', help='Android NDK Path', nargs=1)
     parser.add_argument('--project_id', nargs=1, help="Project id, as 'com.something.myapp'", default="com.gempyre.myapp")
     parser.add_argument('--cmake_path', nargs=1, help="Since Android SDK default Cmake is too old, path to (at least) 3.16 is needed, dont include bin :-o",
     default= "/usr/local" if sys.platform == 'darwin' else '/usr')
@@ -46,10 +48,35 @@ def main():
     if len(file_uri) < 2:
         print("Expected project id as 'com.something.myapp'")
         exit(-1)
+     
+    android_root = args.android_sdk
         
-    if 'ANDROID_HOME' not in os.environ and 'ANDROID_SDK_ROOT' not in os.environ:
-        print(env, "ANDROID_HOME nor ANDROID_SDK_ROOT is not set")
-        exit(-3)
+    if not android_root:
+        if 'ANDROID_HOME' in os.environ:
+            android_root = os.environ['ANDROID_HOME']
+        elif 'ANDROID_SDK_ROOT' in os.environ:
+            android_root = os.environ['ANDROID_SDK_ROOT']
+        else:
+            print("Android SDK not found")
+            exit(-34)    
+   
+    if not os.path.exists(android_root):
+        print("Invalid Android SDK ", android_root)
+        exit(-2)
+    
+    android_ndk_root = args.android_ndk
+        
+    if not android_ndk_root:
+        if 'ANDROID_NDK_ROOT' in os.environ:
+            android_ndk_root = os.environ['ANDROID_NDK_ROOT']
+        else:
+            print("Android NDK not found")
+            exit(-34)
+            
+    if not os.path.exists(android_ndk_root):
+        print("Invalid Android NDK ", android_ndk_root)
+        exit(-2)
+            
  
     if sys.platform == 'darwin':
         env_path('AR')
@@ -62,15 +89,29 @@ def main():
         exit(-3)
     
     capture = subprocess.run([args.cmake_path + '/bin/cmake', '--version'], capture_output=True)
-    m = re.match(r'cmake\sversion\s(\d+)\.(\d+)(?:\.(\d+))?', capture.stdout.decode('ascii'))
+    m = re.match(r'cmake\s+version\s+(\d+)\.(\d+)(?:\.(\d+))?', capture.stdout.decode('ascii'))
     if not m:
-        print("Cannot find cmake", capture.stderr)
+        print("Cannot find cmake", capture.stderr.decode('ascii'))
         parser.print_help()
         exit(-1);
     if int(m[1]) < 3 or int(m[1]) == 3 and int(m[2]) < 11:
-        print("Invalid cmake version:", capture.stdout)
+        print("Invalid cmake version:", capture.stdout.decode('ascii'))
         exit(-4)
         
+    capture = subprocess.run(['gradle', '--version'], capture_output=True)
+    ver_passed = False
+    if len(capture.stderr):
+        print("Error", capture.stderr).decode('ascii')
+    for l in capture.stdout.decode('ascii').split('\n'):
+        m = re.match(r'Gradle\s+(\d+)\.(\d+)(?:\.(\d+))?', l)
+        if m:
+             if int(m[1]) > 6 or int(m[1]) == 6 and int(m[2]) >= 5:
+                ver_passed = True
+     
+    if not ver_passed:
+        print("Tool old Gradle", capture.stdout.decode('ascii'))
+        print("Expect 6.5...")
+        exit(-1)       
              
     try:
         os.mkdir(args.project_name)
@@ -85,7 +126,7 @@ def main():
         
     subprocess.run(gradle_call, cwd=root)
     
-    add_line('settings.gradle', "include ':app'")
+    add_line('settings.gradle', "include ':app'\nrootProject.name = \"" + args.project_name + "\"\n")
 
     build_gradle = '''
 buildscript {
@@ -118,15 +159,20 @@ task clean(type: Delete) {
     
     # Is filter needed? 'arm64-v8a', 
     
+    osx_line = ''
+    if sys.platform == 'darwin':
+        osx_line = ",\n                          -DRANLIB=\"" + os.environ['RANLIB'] + "\"\n"
+    
     app_build_gradle = '''
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
+    compileSdkVersion 29
+    buildToolsVersion "30.0.1"
     defaultConfig {
         applicationId "''' + args.project_id + '''"
-        minSdkVersion 25
-        targetSdkVersion 25
+        minSdkVersion 24
+        targetSdkVersion 29	
         versionCode 1
         versionName "1.0"
     }
@@ -158,11 +204,10 @@ android {
                           "-DHAS_MDMAKER=OFF",
                           "-DANDROID_STL=c++_static",
                           "-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a",
-                          "-DCMAKE_ANDROID_ARCH=armv7-a",
-                          "-DRANLIB=''' + os.environ['RANLIB'] if sys.platform == 'darwin' else 'None' + '''"
+                          "-DCMAKE_ANDROID_ARCH=armv7-a" ''' + osx_line + '''
                 }
             }
-    }
+    }	
 }
 
 dependencies {
@@ -172,7 +217,7 @@ dependencies {
 }
 
 '''
-    write_line('local.properties', 'cmake.dir="' + args.cmake_path + '"\n')
+    write_line('local.properties', 'cmake.dir=' + args.cmake_path + '\nsdk.dir=' + android_root + '\nndk.dir=' + android_ndk_root + '\n')
     
     add_line('app/build.gradle', app_build_gradle)
     
