@@ -236,7 +236,8 @@ dependencies {
     android_manifest = '''<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="''' + args.project_id + '''">
-
+    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
     <application
         android:label="''' + args.project_name + '''"
         android:theme="@style/AppTheme">
@@ -269,10 +270,14 @@ public class MainActivity extends Activity {
 
     public native int callMain();
 
-    public int onUiLoad(String url) {
-            String encodedHtml = Base64.encodeToString(url.getBytes(),
-            Base64.NO_PADDING);
-            webView.loadData(encodedHtml, "text/html", "base64");
+    public int onUiLoad(String urlStr) {
+            final String uri = urlStr;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    webView.loadUrl(uri);
+                    }
+            });
             return 0;
     }
     
@@ -285,7 +290,9 @@ public class MainActivity extends Activity {
         System.loadLibrary("''' + project_name + '''");
         
 	    webView = new WebView(this);
-            setContentView(webView);
+	    webView.getSettings().setDomStorageEnabled(true);
+	    webView.getSettings().setJavaScriptEnabled(true);
+	    setContentView(webView);
 
 	    Thread thread = new Thread(new Runnable() {
 		    public void run() {
@@ -377,6 +384,7 @@ target_link_libraries (${PROJECT_NAME} gempyre)
   
     JNIEXPORT jint JNICALL
     Java_com_gempyre_myapp_MainActivity_callMain(JNIEnv* env, jobject obj) {
+        Gempyre::setDebug(Gempyre::DebugLevel::Debug, true); // true shall use syslog, that in android is logcat!
         Gempyre::setJNIENV(env, obj);
         Gempyre::Ui ui({{"/main.html", Mainhtml}}, "main.html");
         Gempyre::Element(ui, "h2").setHTML("Gempyre for Android!");

@@ -1,6 +1,4 @@
-git clean -dffx
-#export AR=$(find ${ANDROID_HOME} -name arm-linux-androideabi-ar | head -n 1)
-#export RANLIB=$(find ${ANDROID_HOME} -name arm-linux-androideabi-ranlib | head -n 1)
+#git clean -dffx
 python3 make_android_app.py
 pushd GEMPYRE_APP/
 ./gradlew build -x test
