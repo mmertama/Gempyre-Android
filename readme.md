@@ -51,13 +51,13 @@ other development platforms may will be possible upon interest.
  #### Build
  <code>./gradlew build -x test</code>
  #### Install
- <code>${ANDROID_SDK_ROOT}/platform-tools/adb -s <mark>device-id</mark> install <bold>path_to_apk</bold></code>
+ <code>${ANDROID_SDK_ROOT}/platform-tools/adb -s </code><mark>device-id</mark><code> install </code><mark>path_to_apk</mark></code>
  #### Uninstall
  Needed prior to re-install. </br>
- <code> ${ANDROID_SDK_ROOT}/platform-tools/adb -s <bold>device-id</bold> uninstall <bold>product_id</bold> </code>
+ <code> ${ANDROID_SDK_ROOT}/platform-tools/adb -s </code><mark>device-id</mark><code> uninstall </code><mark>product_id</mark> </code>
  #### Start for debugger
  For Android Studio attach to process. </br>
- <code>${ANDROID_SDK_ROOT}/platform-tools/adb shell am start -n "<bold>product_id</bold>/.MainActivity" -D</code>
+ <code>${ANDROID_SDK_ROOT}/platform-tools/adb shell am start -n "</code><mark>product_id</mark><code>/.MainActivity" -D</code>
  #### List Devices
  <code>${ANDROID_SDK_ROOT}/platform-tools/adb devices</code>
   
