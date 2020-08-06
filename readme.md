@@ -48,17 +48,17 @@ other development platforms may will be possible upon interest.
  This example application just writes a "Gempyre for Android!" in the given header (see <code>gui/main.hml</code>). More exampes in the [Gempyre](https://github.com/mmertama/Gempyre) repositiry.   
  
  ### Useful commands
- ####Build
+ #### Build
  <code>./gradlew build -x test</code>
- ####Install
- ${ANDROID_SDK_ROOT}/platform-tools/adb -s <i>device-id</i> install <i>path_to_apk</i>
- ####Uninstall
+ #### Install
+ ${ANDROID_SDK_ROOT}/platform-tools/adb -s <mark>device-id</mark> install <mark>path_to_apk</mark>
+ #### Uninstall
  Needed prior to re-install.
- <code>${ANDROID_SDK_ROOT}/platform-tools/adb -s <i>device-id</i> uninstall <i>product_id</i> </code>
- ####Start for debugger
+ <code>${ANDROID_SDK_ROOT}/platform-tools/adb -s <mark>device-id</mark> uninstall <mark>product_id</mark> </code>
+ #### Start for debugger
  For Android Studio attach to process.
- <code>${ANDROID_SDK_ROOT}/platform-tools/adb shell am start -n "<i>product_id</i>/.MainActivity" -D
- ####List Devices
+ <code>${ANDROID_SDK_ROOT}/platform-tools/adb shell am start -n "<mark>product_id</mark>/.MainActivity" -D
+ #### List Devices
  <code>${ANDROID_SDK_ROOT}/platform-tools/adb devices</code>
   
       
