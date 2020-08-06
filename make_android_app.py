@@ -33,13 +33,14 @@ def main():
         print ("Shall be using at least Python 3.7")
         exit(-1)
     
-    parser = argparse.ArgumentParser(description='Gempyre-Android init.')
-    parser.add_argument('--project_name', help='Project name', nargs=1, default="GEMPYRE_APP")
-    parser.add_argument('--android_sdk', help='Android Path', nargs=1)
-    parser.add_argument('--android_ndk', help='Android NDK Path', nargs=1)
-    parser.add_argument('--project_id', nargs=1, help="Project id, as 'com.something.myapp'", default="com.gempyre.myapp")
-    parser.add_argument('--cmake_path', nargs=1, help="Since Android SDK default Cmake is too old, path to (at least) 3.16 is needed, dont include bin :-o",
+    parser = argparse.ArgumentParser(description='Gempyre-Android init.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--project_name', action='store', help='Project name', default="GEMPYRE_APP")
+    parser.add_argument('--android_sdk', action='store',help='Android Path, overrides ANDROID_SDK_ROOT and ANDROID_HOME')
+    parser.add_argument('--android_ndk', action='store', help='Android NDK Path, overrides ANDROID_NDK_ROOT')
+    parser.add_argument('--project_id', action='store', help="Project id, as 'com.something.myapp'", default="com.gempyre.myapp")
+    parser.add_argument('--cmake_path', action='store', help="Since Android SDK default Cmake is too old, path to (at least) 3.16 is needed, dont include bin :-o",
     default= "/usr/local" if sys.platform == 'darwin' else '/usr')
+    parser.add_argument('--project_root', action='store', help="Directory where the project is created", default=os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
 
     args = parser.parse_args()
     
@@ -49,7 +50,7 @@ def main():
         print("Expected project id as 'com.something.myapp'")
         exit(-1)
      
-    android_root = args.android_sdk[0] if args.android_sdk else None
+    android_root = args.android_sdk if args.android_sdk else None
     
     if not android_root:
         if 'ANDROID_HOME' in os.environ:
@@ -64,7 +65,7 @@ def main():
         print("Invalid Android SDK ", android_root)
         exit(-2)
     
-    android_ndk_root = args.android_ndk[0] if args.android_ndk else None
+    android_ndk_root = args.android_ndk if args.android_ndk else None
         
     if not android_ndk_root:
         if 'ANDROID_NDK_ROOT' in os.environ:
@@ -111,16 +112,18 @@ def main():
     if not ver_passed:
         print("Tool old Gradle", capture.stdout.decode('ascii'))
         print("Expect 6.5...")
-        exit(-1)       
-             
-    try:
-        os.mkdir(args.project_name)
-    except OSError:
-        print("Invalid project name:", args.project_name)
-        exit(-2)
+        exit(-1)  
         
     global root
-    root = args.project_name + '/'
+    root = args.project_root + '/' + args.project_name + '/'     
+             
+    try:
+        os.makedirs(root)
+    except OSError as e:
+        print("Invalid project name:", root, e)
+        exit(-2)
+        
+   
         
     gradle_call = ['gradle', 'init', '--type', 'basic', '--dsl', 'groovy', '--project-name', args.project_name]    
         
