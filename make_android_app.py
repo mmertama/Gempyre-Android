@@ -344,7 +344,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DANDROID_ABI=armeabi-v7a")
 FetchContent_Declare(
     gempyre_library
     GIT_REPOSITORY https://github.com/mmertama/Gempyre.git
-    GIT_TAG        origin/android
     )
     
     
@@ -375,22 +374,23 @@ target_link_libraries (${PROJECT_NAME} gempyre)
 '''
     write_line('Gempyre/CMakeLists.txt', cmakelists)
     
+    classname = args.project_id.replace('.', '_')
+    
     main_cpp = ''' //This file is an example, a script generated
     #include <jni.h>
     #include <gempyre.h>
     #include "main_resource.h"
     
-    extern "C" {
+    #define ANDROID_MAIN() JNIEXPORT jint JNICALL Java_''' + classname + '''_MainActivity_callMain(JNIEnv* env, jobject obj)
+    extern "C" ANDROID_MAIN();
   
-    JNIEXPORT jint JNICALL
-    Java_com_gempyre_myapp_MainActivity_callMain(JNIEnv* env, jobject obj) {
+     ANDROID_MAIN() {
         Gempyre::setDebug(Gempyre::DebugLevel::Debug, true); // true shall use syslog, that in android is logcat!
         Gempyre::setJNIENV(env, obj);
         Gempyre::Ui ui({{"/main.html", Mainhtml}}, "main.html");
         Gempyre::Element(ui, "h2").setHTML("Gempyre for Android!");
         ui.run();
         return 0;
-    }
     }
     '''
     
