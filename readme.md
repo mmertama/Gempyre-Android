@@ -6,7 +6,7 @@ Or merely its is a wizard that creates a working NDK app that has a Gempyre GUI.
 ## To Get It Working
 
 Using Gempyre for Android is currently building on Linux (or actually Ubuntu 20.04). Therefore for non-Linux platforms
-I advice to 1) Install Virtualbox 2) install Lubuntu (20.05) 3) Install android studio (available at Snap) etc. as in prequisities. 
+I advice to 1) Install Virtualbox 2) install Lubuntu (20.x) 3) Install android studio (available at Snap) etc. as in prequisities. 
 
 ### Prequisities, before we begin:
 * Install Android SDK (with NDK) (e.g. snap install-android-studio --classic)
