@@ -74,12 +74,12 @@ markus@markus-pc:~/Development/Gempyre-Android$ python3 make_android_app.py --pr
  
  ### Useful commands
  #### Build
- <code>./gradlew build -x test</code>
+ <code>./gradlew build -x test </code>
  #### List Connected Devices
  Set you phone to [Debug mode](https://developer.android.com/studio/debug/dev-options).</br>
- <code>${ANDROID_SDK_ROOT}/platform-tools/adb devices</code>
+ <code>${ANDROID_SDK_ROOT}/platform-tools/adb devices </code>
  #### Install
- <code>${ANDROID_SDK_ROOT}/platform-tools/adb -s</code> device-id <code> install </code>path_to_apk</code>
+ <code>${ANDROID_SDK_ROOT}/platform-tools/adb -s</code> device-id <code>install</code> path_to_apk
  #### Uninstall
  Needed prior to re-install.</br>
  <code>${ANDROID_SDK_ROOT}/platform-tools/adb -s </code>device-id<code> uninstall </code><mark>product_id</code>
