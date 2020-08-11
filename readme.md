@@ -49,6 +49,7 @@ markus@markus-pc:~/Development/Gempyre-Android$ python3 make_android_app.py --pr
      ui.run();
      return 0;
  }
+ </pre>
  Since the UI is just HTML, it looks like this:
  
  ```
