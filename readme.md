@@ -82,7 +82,7 @@ markus@markus-pc:~/Development/Gempyre-Android$ python3 make_android_app.py --pr
  <code>${ANDROID_SDK_ROOT}/platform-tools/adb -s</code> device-id <code>install</code> path_to_apk
  #### Uninstall
  Needed prior to re-install.</br>
- <code>${ANDROID_SDK_ROOT}/platform-tools/adb -s </code>device-id<code> uninstall </code><mark>product_id</code>
+ <code>${ANDROID_SDK_ROOT}/platform-tools/adb -s</code> device-id <code>uninstall</code> product_id
  #### Start for debugger
  For Android Studio attach to process. </br>
  <code>${ANDROID_SDK_ROOT}/platform-tools/adb shell am start -n "</code>product_id<code>/.MainActivity" -D</code>
