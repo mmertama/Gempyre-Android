@@ -5,15 +5,15 @@ Or merely its is a wizard that creates a working NDK app that has a Gempyre GUI.
 
 ## To Get It Working
 
-Gempyre for Android is currently build on Ubuntu (20.04),
-other development platforms may will be possible upon interest.
+Using Gempyre for Android is currently building on Linux (or actually Ubuntu 20.04). Therefore for non-Linux platforms
+I advice to 1) Install Virtualbox 2) install Lubuntu (20.05) 3) Install android studio (available at Snap) etc. as in prequisities. 
 
-### Before we begin:
-* Install Android SDK (with NDK)
-* Install Gradle (at least 6.5)
-* Install CMake (at least 3.16)
-* Install Ninja 
-* Install Python 3.8
+### Prequisities, before we begin:
+* Install Android SDK (with NDK) (e.g. snap install-android-studio --classic)
+* Install Gradle (at least 6.5) (e.g. sudo sudo add-apt-repository ppa:cwchien/gradle && sudo apt-get update && sudo apt upgrade gradle)
+* Install CMake (at least 3.16) (e.g. sudo apt-get install cmake)
+* Install Ninja  (e.g. sudo apt-get install ninja-build)
+* Install Python 3.8 (shall already be there)
 
 ### Call Wizard:
  There is a Wizard that you can modify
