@@ -18,8 +18,13 @@ I advice to 1) Install Virtualbox 2) install Lubuntu (20.x) 3) Install android s
 ### Call Wizard:
  There is a Wizard that you can modify
  Run <code>python3 make_android_app.py --help</code>
- to see available options, but run with default values
- 'should' be ok (WoMM)
+ to see available options. 
+ 
+ <pre>
+markus@markus-pc:~/Development/Gempyre-Android$ export ANDROID_SDK_ROOT=~/Android/Sdk
+markus@markus-pc:~/Development/Gempyre-Android$ export ANDROID_NDK_ROOT=~/Android/Sdk/ndk/21.3.6528147
+markus@markus-pc:~/Development/Gempyre-Android$ python3 make_android_app.py --project_name MyApp --project_id com.gempyre.myapp
+</pre>
  
  It generates a folder (GEMPYRE_APP by default).
  Int that folder there is 'Gempyre' folder, that contains a
