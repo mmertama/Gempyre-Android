@@ -14,7 +14,7 @@ I advice to 1) Install Virtualbox, provide at least 20GB drive and 4GB (or even 
 * Install CMake (at least 3.16) (<code>sudo apt-get install cmake</code>)
 * Install Ninja  (<code>sudo apt-get install ninja-build</code>)
 * Install Python 3.8 (shall already be there)
-* You may have to install build tools (sudo apt-get install build-essentia)
+* You may have to install build tools (<code>sudo apt-get install build-essential</build>)
 
 ### Call Wizard:
  There is a Wizard that you can modify
