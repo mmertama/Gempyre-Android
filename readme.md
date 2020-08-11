@@ -49,27 +49,26 @@ markus@markus-pc:~/Development/Gempyre-Android$ python3 make_android_app.py --pr
      ui.run();
      return 0;
  }
- </pre>
- 
  Since the UI is just HTML, it looks like this:
- <pre>
- <!DOCTYPE html>
- <html>
-   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <title>drawCanvas</title>
-  </head>
-  <body>
-   <script src="/gempyre.js"></script>
-   <h1>Hello World!</h1>
-   <h2 id="h2"></h2>
-  </body>
-</html>
-</pre>
-  
+ 
+ ```
+  <!DOCTYPE html>
+   <html>
+     <head>
+      <meta charset="utf-8">
+      <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+      <meta http-equiv="Pragma" content="no-cache" />
+      <meta http-equiv="Expires" content="0" />
+      <title>drawCanvas</title>
+    </head>
+    <body>
+     <script src="/gempyre.js"></script>
+     <h1>Hello World!</h1>
+     <h2 id="h2"></h2>
+    </body>
+  </html>
+```
+ 
  This example application just writes a "Gempyre for Android!" in the given header (see <code>gui/main.hml</code>). More exampes in the [Gempyre](https://github.com/mmertama/Gempyre) repositiry.   
  
  ### Useful commands
