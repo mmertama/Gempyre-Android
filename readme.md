@@ -9,10 +9,10 @@ Using Gempyre for Android is currently building on Linux (or actually Ubuntu 20.
 I advice to 1) Install Virtualbox 2) install Lubuntu (20.x) 3) Install android studio (available at Snap) etc. as in prequisities. 
 
 ### Prequisities, before we begin:
-* Install Android SDK (with NDK) (e.g. snap install-android-studio --classic)
-* Install Gradle (at least 6.5) (e.g. sudo sudo add-apt-repository ppa:cwchien/gradle && sudo apt-get update && sudo apt upgrade gradle)
-* Install CMake (at least 3.16) (e.g. sudo apt-get install cmake)
-* Install Ninja  (e.g. sudo apt-get install ninja-build)
+* Install Android SDK (with NDK) (e.g. <code>snap install-android-studio --classic</code>)
+* Install Gradle (at least 6.5) (e.g. <code>sudo sudo add-apt-repository ppa:cwchien/gradle && sudo apt-get update && sudo apt upgrade gradle</code>)
+* Install CMake (at least 3.16) (e.g. <code>sudo apt-get install cmake</code>)
+* Install Ninja  (e.g. <code>sudo apt-get install ninja-build</code>)
 * Install Python 3.8 (shall already be there)
 
 ### Call Wizard:
@@ -50,6 +50,9 @@ I advice to 1) Install Virtualbox 2) install Lubuntu (20.x) 3) Install android s
  ### Useful commands
  #### Build
  <code>./gradlew build -x test</code>
+ #### List Connected Devices
+ Set you phone to [Debug mode](https://developer.android.com/studio/debug/dev-options).</br>
+ <code>${ANDROID_SDK_ROOT}/platform-tools/adb devices</code>
  #### Install
  <code>${ANDROID_SDK_ROOT}/platform-tools/adb -s </code><mark>device-id</mark><code> install </code><mark>path_to_apk</mark></code>
  #### Uninstall
@@ -58,8 +61,7 @@ I advice to 1) Install Virtualbox 2) install Lubuntu (20.x) 3) Install android s
  #### Start for debugger
  For Android Studio attach to process. </br>
  <code>${ANDROID_SDK_ROOT}/platform-tools/adb shell am start -n "</code><mark>product_id</mark><code>/.MainActivity" -D</code>
- #### List Devices
- <code>${ANDROID_SDK_ROOT}/platform-tools/adb devices</code>
+ 
   
       
 
