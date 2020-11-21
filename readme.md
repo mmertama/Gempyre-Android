@@ -1,8 +1,7 @@
 # Gempyre For Android
-__Easiest way to make Android applications on C++__
+__The easiest way to make Android applications on C++__
 
-Early version of [Gempyre](https://github.com/mmertama/Gempyre) for Android.
-Or merely its is a wizard that creates a working NDK app that has a Gempyre GUI.
+[Gempyre](https://github.com/mmertama/Gempyre) for Android is a wizard that creates a working NDK app that has a Gempyre GUI. The wizard creates a working skeleton application that is easy to modify and extend with C/C++ libraries.
 
 ## To Get It Working
 
